@@ -1,0 +1,15 @@
+{
+  "name": "pathlab",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Interactive laboratory for pathfinding algorithms",
+  "license": "MIT",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=20"
+  }
+}
