@@ -2,3 +2,6 @@ export type { Edge, Graph, NodeId } from './graph.js';
 export type { SearchOptions, SearchRun, StepEvent } from './events.js';
 export { GridGraph } from './grid.js';
 export type { GridOptions } from './grid.js';
+export { Rng, randomSeed } from './rng.js';
+export { MAP_GENERATORS, getGenerator } from './generators/registry.js';
+export type { GeneratorInfo, MapGenerator } from './generators/registry.js';
