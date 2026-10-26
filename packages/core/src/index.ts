@@ -5,3 +5,6 @@ export type { GridOptions } from './grid.js';
 export { Rng, randomSeed } from './rng.js';
 export { MAP_GENERATORS, getGenerator } from './generators/registry.js';
 export type { GeneratorInfo, MapGenerator } from './generators/registry.js';
+export { aStar, dijkstra, greedyBestFirst } from './algorithms/best-first.js';
+export { solve } from './solve.js';
+export type { SearchResult } from './solve.js';
