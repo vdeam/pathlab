@@ -10,3 +10,5 @@ export { bfs } from './algorithms/bfs.js';
 export { dfs } from './algorithms/dfs.js';
 export { solve } from './solve.js';
 export type { SearchResult } from './solve.js';
+export { ALGORITHMS, getAlgorithm } from './algorithms/registry.js';
+export type { AlgorithmInfo } from './algorithms/registry.js';
