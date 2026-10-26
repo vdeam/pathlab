@@ -44,3 +44,103 @@ describe.each(MAP_GENERATORS)('$name', ({ generate }) => {
     expect(blocked).toBeLessThan(walls.length);
   });
 });
+
+/** Number of separate groups of open cells, found by flood filling with 4-way moves. */
+function openRegions(walls: Uint8Array, width: number, height: number): number {
+  const seen = new Uint8Array(walls.length);
+  let regions = 0;
+
+  for (let origin = 0; origin < walls.length; origin++) {
+    if (walls[origin] === 1 || seen[origin] === 1) continue;
+    regions++;
+    const stack = [origin];
+    seen[origin] = 1;
+    while (stack.length > 0) {
+      const cell = stack.pop()!;
+      const x = cell % width;
+      const y = (cell - x) / width;
+      for (const [dx, dy] of [
+        [0, -1],
+        [1, 0],
+        [0, 1],
+        [-1, 0],
+      ] as const) {
+        const nx = x + dx;
+        const ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue;
+        const neighbor = ny * width + nx;
+        if (walls[neighbor] === 1 || seen[neighbor] === 1) continue;
+        seen[neighbor] = 1;
+        stack.push(neighbor);
+      }
+    }
+  }
+  return regions;
+}
+
+// Every generator but `random` promises a map where any open cell can reach any other.
+describe.each(MAP_GENERATORS.filter((generator) => generator.id !== 'random'))('$name connectivity', ({ generate }) => {
+  it.each([1, 2, 3, 99, 12345])('leaves a single open region with seed %i', (seed) => {
+    expect(openRegions(generate(WIDTH, HEIGHT, seed), WIDTH, HEIGHT)).toBe(1);
+  });
+});
+
+describe('maze', () => {
+  const walls = getGenerator('maze').generate(WIDTH, HEIGHT, 4);
+  const open = (x: number, y: number) => walls[y * WIDTH + x] === 0;
+
+  it('keeps a wall all the way around the border', () => {
+    for (let x = 0; x < WIDTH; x++) expect(open(x, 0) || open(x, HEIGHT - 1)).toBe(false);
+    for (let y = 0; y < HEIGHT; y++) expect(open(0, y) || open(WIDTH - 1, y)).toBe(false);
+  });
+
+  it('has no open 2x2 block, so every corridor is one cell wide', () => {
+    for (let y = 0; y < HEIGHT - 1; y++) {
+      for (let x = 0; x < WIDTH - 1; x++) {
+        expect(open(x, y) && open(x + 1, y) && open(x, y + 1) && open(x + 1, y + 1)).toBe(false);
+      }
+    }
+  });
+});
+
+describe('streets', () => {
+  const walls = getGenerator('streets').generate(WIDTH, HEIGHT, 8);
+
+  it('runs every street from edge to edge', () => {
+    const fullRows = Array.from({ length: HEIGHT }, (_, y) =>
+      Array.from({ length: WIDTH - 2 }, (_, i) => walls[y * WIDTH + i + 1]).every((cell) => cell === 0),
+    ).filter(Boolean).length;
+    expect(fullRows).toBeGreaterThanOrEqual(2);
+  });
+
+  it('leaves solid blocks between the streets', () => {
+    const blocked = walls.reduce((total, cell) => total + cell, 0);
+    expect(blocked).toBeGreaterThan(walls.length * 0.2);
+  });
+});
+
+describe('rooms', () => {
+  it('carves open areas wider than a corridor', () => {
+    const walls = getGenerator('rooms').generate(WIDTH, HEIGHT, 11);
+    const open = (x: number, y: number) => walls[y * WIDTH + x] === 0;
+    let blocks = 0;
+    for (let y = 0; y < HEIGHT - 1; y++) {
+      for (let x = 0; x < WIDTH - 1; x++) {
+        if (open(x, y) && open(x + 1, y) && open(x, y + 1) && open(x + 1, y + 1)) blocks++;
+      }
+    }
+    expect(blocks).toBeGreaterThan(20);
+  });
+});
+
+describe('caves', () => {
+  // The automaton erodes walls on every pass. Tuned badly it collapses into a single empty
+  // room, or eats itself down to a handful of cells; neither is caught by the shared
+  // contract above, since both are still one connected region.
+  it.each([1, 2, 3, 99, 12345])('keeps between a tenth and three quarters of the map open with seed %i', (seed) => {
+    const walls = getGenerator('caves').generate(WIDTH, HEIGHT, seed);
+    const open = walls.reduce((total, cell) => total + (cell === 0 ? 1 : 0), 0) / walls.length;
+    expect(open).toBeGreaterThan(0.1);
+    expect(open).toBeLessThan(0.75);
+  });
+});
