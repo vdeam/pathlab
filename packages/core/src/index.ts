@@ -6,5 +6,7 @@ export { Rng, randomSeed } from './rng.js';
 export { MAP_GENERATORS, getGenerator } from './generators/registry.js';
 export type { GeneratorInfo, MapGenerator } from './generators/registry.js';
 export { aStar, dijkstra, greedyBestFirst } from './algorithms/best-first.js';
+export { bfs } from './algorithms/bfs.js';
+export { dfs } from './algorithms/dfs.js';
 export { solve } from './solve.js';
 export type { SearchResult } from './solve.js';
