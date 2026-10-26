@@ -21,6 +21,11 @@ export class Rng {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   }
 
+  /** An integer in `[0, maxExclusive)`. */
+  int(maxExclusive: number): number {
+    return Math.floor(this.next() * maxExclusive);
+  }
+
   /** True with probability `p`, where `p` is in `[0, 1]`. */
   chance(p: number): boolean {
     return this.next() < p;
