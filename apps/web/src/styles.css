@@ -188,4 +188,7 @@ body {
   display: block;
   margin: 0 auto;
   border-radius: 4px;
+  /* The canvas handles its own drags, so the browser must not pan or scroll on touch. */
+  touch-action: none;
+  cursor: crosshair;
 }

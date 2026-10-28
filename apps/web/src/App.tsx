@@ -1,22 +1,14 @@
-import { getGenerator } from '@pathlab/core';
-import { useMemo } from 'react';
 import { GridCanvas } from './components/GridCanvas.js';
-import { nearestOpenCell } from './lib/placement.js';
-
-/** Odd dimensions, so maze corridors land on the lattice without a clipped last row. */
-const GRID_WIDTH = 49;
-const GRID_HEIGHT = 29;
-const SEED = 2024;
+import { GRID_HEIGHT, GRID_WIDTH, useStore } from './store.js';
 
 export function App() {
-  const scenario = useMemo(() => {
-    const walls = getGenerator('rooms').generate(GRID_WIDTH, GRID_HEIGHT, SEED);
-    return {
-      walls,
-      start: nearestOpenCell(walls, GRID_WIDTH, 2, Math.floor(GRID_HEIGHT / 2)),
-      goal: nearestOpenCell(walls, GRID_WIDTH, GRID_WIDTH - 3, Math.floor(GRID_HEIGHT / 2)),
-    };
-  }, []);
+  const walls = useStore((state) => state.walls);
+  const start = useStore((state) => state.start);
+  const goal = useStore((state) => state.goal);
+  const seed = useStore((state) => state.seed);
+  const setWall = useStore((state) => state.setWall);
+  const moveStart = useStore((state) => state.moveStart);
+  const moveGoal = useStore((state) => state.moveGoal);
 
   return (
     <>
@@ -27,7 +19,7 @@ export function App() {
             Pathlab
           </span>
           <span className="meta">
-            {GRID_WIDTH} × {GRID_HEIGHT} · seed {SEED}
+            {GRID_WIDTH} × {GRID_HEIGHT} · seed {seed}
           </span>
         </div>
       </header>
@@ -47,9 +39,12 @@ export function App() {
               <GridCanvas
                 width={GRID_WIDTH}
                 height={GRID_HEIGHT}
-                walls={scenario.walls}
-                start={scenario.start}
-                goal={scenario.goal}
+                walls={walls}
+                start={start}
+                goal={goal}
+                onSetWall={setWall}
+                onMoveStart={moveStart}
+                onMoveGoal={moveGoal}
               />
             </div>
           </section>

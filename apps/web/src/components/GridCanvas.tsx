@@ -9,14 +9,24 @@ export interface GridCanvasProps {
   readonly walls: Uint8Array;
   readonly start: number;
   readonly goal: number;
+  readonly onSetWall: (id: number, blocked: boolean) => void;
+  readonly onMoveStart: (id: number) => void;
+  readonly onMoveGoal: (id: number) => void;
 }
 
 /** Below this, the gridlines crowd the cells and are better left out. */
 const MIN_CELL_FOR_GRIDLINES = 7;
+/** Below this, the S and G letters are no longer legible. */
+const MIN_CELL_FOR_LABELS = 12;
 
-export function GridCanvas({ width, height, walls, start, goal }: GridCanvasProps) {
+/** What the current drag is doing. Fixed on pointer down and kept until pointer up. */
+type Drag = { kind: 'start' } | { kind: 'goal' } | { kind: 'paint'; blocked: boolean } | null;
+
+export function GridCanvas({ width, height, walls, start, goal, onSetWall, onMoveStart, onMoveGoal }: GridCanvasProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const drag = useRef<Drag>(null);
+  const lastCell = useRef<number | null>(null);
   const [cellSize, setCellSize] = useState(16);
 
   // The grid fills whatever width the stage gives it, so the cell size follows the layout.
@@ -83,7 +93,7 @@ export function GridCanvas({ width, height, walls, start, goal }: GridCanvasProp
       context.lineWidth = 2;
       context.stroke();
 
-      if (cellSize < 12) return;
+      if (cellSize < MIN_CELL_FOR_LABELS) return;
       context.fillStyle = tokens.background;
       context.font = `600 ${Math.round(cellSize * 0.5)}px ${tokens.fontMono}`;
       context.textAlign = 'center';
@@ -95,13 +105,75 @@ export function GridCanvas({ width, height, walls, start, goal }: GridCanvasProp
     drawMarker(goal, tokens.goal, 'G');
   }, [width, height, walls, start, goal, cellSize]);
 
+  /** The cell under the pointer, or null when it falls outside the grid. */
+  const cellAt = (event: React.PointerEvent): number | null => {
+    const canvas = canvasRef.current;
+    if (!canvas) return null;
+    const bounds = canvas.getBoundingClientRect();
+    const x = Math.floor((event.clientX - bounds.left) / cellSize);
+    const y = Math.floor((event.clientY - bounds.top) / cellSize);
+    return x >= 0 && y >= 0 && x < width && y < height ? y * width + x : null;
+  };
+
+  const applyTo = (id: number) => {
+    const current = drag.current;
+    if (!current) return;
+    if (current.kind === 'start') onMoveStart(id);
+    else if (current.kind === 'goal') onMoveGoal(id);
+    else onSetWall(id, current.blocked);
+  };
+
+  const handlePointerDown = (event: React.PointerEvent) => {
+    const id = cellAt(event);
+    if (id === null) return;
+    canvasRef.current?.setPointerCapture(event.pointerId);
+
+    if (id === start) drag.current = { kind: 'start' };
+    else if (id === goal) drag.current = { kind: 'goal' };
+    // The first cell decides the mode for the whole stroke: starting on a wall erases,
+    // starting on open ground draws. Otherwise a drag would flicker cells on and off.
+    else drag.current = { kind: 'paint', blocked: walls[id] === 0 };
+
+    lastCell.current = id;
+    applyTo(id);
+  };
+
+  const handlePointerMove = (event: React.PointerEvent) => {
+    if (!drag.current || lastCell.current === null) return;
+    const id = cellAt(event);
+    if (id === null || id === lastCell.current) return;
+
+    // A fast drag reports distant positions, so fill in the cells it skipped over.
+    const fromX = lastCell.current % width;
+    const fromY = Math.floor(lastCell.current / width);
+    const toX = id % width;
+    const toY = Math.floor(id / width);
+    const steps = Math.max(Math.abs(toX - fromX), Math.abs(toY - fromY));
+    for (let step = 1; step <= steps; step++) {
+      const x = Math.round(fromX + ((toX - fromX) * step) / steps);
+      const y = Math.round(fromY + ((toY - fromY) * step) / steps);
+      applyTo(y * width + x);
+    }
+
+    lastCell.current = id;
+  };
+
+  const endDrag = () => {
+    drag.current = null;
+    lastCell.current = null;
+  };
+
   return (
     <div ref={wrapperRef} className="gridcanvas">
       <canvas
         ref={canvasRef}
         role="img"
-        aria-label={`Search grid, ${width} by ${height} cells`}
+        aria-label={`Search grid, ${width} by ${height} cells. Drag to draw walls, or drag the start and goal markers to move them.`}
         className="gridcanvas__canvas"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
       />
     </div>
   );
