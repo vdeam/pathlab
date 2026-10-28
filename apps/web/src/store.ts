@@ -1,4 +1,4 @@
-import { getGenerator } from '@pathlab/core';
+import { getGenerator, randomSeed } from '@pathlab/core';
 import { create } from 'zustand';
 import { nearestOpenCell } from './lib/placement.js';
 
@@ -30,6 +30,12 @@ interface State extends Scenario {
   setWall: (id: number, blocked: boolean) => void;
   moveStart: (id: number) => void;
   moveGoal: (id: number) => void;
+  /** Rebuilds the map with the given generator, keeping the current seed. */
+  setGenerator: (generatorId: string) => void;
+  /** Rebuilds the map with the same generator and a fresh seed. */
+  shuffleSeed: () => void;
+  /** Empties the map, leaving the markers where they are. */
+  clearWalls: () => void;
 }
 
 const INITIAL_GENERATOR = 'rooms';
@@ -61,4 +67,14 @@ export const useStore = create<State>((set, get) => ({
     if (id === start || walls[id] !== 0) return;
     set({ goal: id });
   },
+
+  // Regenerating replaces the markers too, since the old cells may now be walls.
+  setGenerator: (generatorId) => set({ generatorId, ...createScenario(generatorId, get().seed) }),
+
+  shuffleSeed: () => {
+    const seed = randomSeed();
+    set({ seed, ...createScenario(get().generatorId, seed) });
+  },
+
+  clearWalls: () => set({ walls: new Uint8Array(GRID_WIDTH * GRID_HEIGHT) }),
 }));
