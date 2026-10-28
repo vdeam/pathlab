@@ -1,4 +1,5 @@
 import { GridCanvas } from './components/GridCanvas.js';
+import { MapPanel } from './components/MapPanel.js';
 import { GRID_HEIGHT, GRID_WIDTH, useStore } from './store.js';
 
 export function App() {
@@ -33,7 +34,9 @@ export function App() {
         </section>
 
         <div className="workspace">
-          <aside className="panel" />
+          <aside className="panel">
+            <MapPanel />
+          </aside>
           <section className="stage">
             <div className="card card--stage">
               <GridCanvas
