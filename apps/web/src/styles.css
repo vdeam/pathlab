@@ -1,0 +1,182 @@
+/*
+ * Design tokens: a dark instrument panel.
+ *
+ * The chrome is deep navy and deliberately quiet so that the only saturated colors on
+ * screen belong to the search itself: blue for the frontier, green for the path, red for
+ * the goal. Monospace is reserved for labels, counts and coordinates, never for prose, so
+ * that anything measured reads as data.
+ *
+ * There is no light theme. The grid is a dense field of colored state, and it holds its
+ * contrast far better against a dark background.
+ */
+:root {
+  --bg: #080c18;
+  --surface: #0e1426;
+  --surface-2: #161f3a;
+  --ink: #e9edf8;
+  --ink-2: #8d97b8;
+  --ink-3: #5a6484;
+  --line: #1e294a;
+
+  --accent: #35e0a1;
+  --accent-ink: #06281c;
+  --blue: #4f8cff;
+  --red: #ff5470;
+
+  --cell: #111a33;
+  --wall: #05090f;
+  --grid-line: #1b2645;
+  --visited: #2c4f9e;
+
+  --radius: 10px;
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  /* A faint blueprint rule, far enough below the data grid not to compete with it. */
+  background-color: var(--bg);
+  background-image: linear-gradient(#0d1322 1px, transparent 1px), linear-gradient(90deg, #0d1322 1px, transparent 1px);
+  background-position: -1px -1px;
+  background-size: 64px 64px;
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Small uppercase monospace, for anything measured: counts, seeds, coordinates. */
+.meta {
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgb(8 12 24 / 85%);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+
+.header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 1320px;
+  height: 58px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* An outlined square with one corner drawn in, like a route turning inside a cell. */
+.brand__mark {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  border: 1.5px solid var(--accent);
+  border-radius: 7px;
+}
+
+.brand__mark::after {
+  position: absolute;
+  inset: 6px;
+  border: 2px solid var(--accent);
+  border-width: 0 0 2px 2px;
+  border-radius: 0 0 0 2px;
+  content: '';
+}
+
+.page {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 28px 24px 56px;
+}
+
+.hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 22px;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+.hero p {
+  max-width: 520px;
+  margin: 6px 0 0;
+  color: var(--ink-2);
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+@media (width <= 900px) {
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.stage {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.card--stage {
+  min-height: 420px;
+  padding: 10px;
+}
