@@ -177,6 +177,15 @@ body {
 }
 
 .card--stage {
-  min-height: 420px;
   padding: 10px;
+}
+
+.gridcanvas {
+  width: 100%;
+}
+
+.gridcanvas__canvas {
+  display: block;
+  margin: 0 auto;
+  border-radius: 4px;
 }
