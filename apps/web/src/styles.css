@@ -1,34 +1,48 @@
 /*
- * Design tokens: a dark instrument panel.
+ * Design tokens.
  *
- * The chrome is deep navy and deliberately quiet so that the only saturated colors on
- * screen belong to the search itself: blue for the frontier, green for the path, red for
- * the goal. Monospace is reserved for labels, counts and coordinates, never for prose, so
- * that anything measured reads as data.
+ * A neutral near-black shell, so the only saturated colour on screen belongs to the search
+ * itself: blue for the frontier, green for the route it settles on. The greys are untinted
+ * on purpose; a colour cast in the chrome would compete with the state colours in the grid.
  *
- * There is no light theme. The grid is a dense field of colored state, and it holds its
- * contrast far better against a dark background.
+ * Monospace is reserved for anything measured — counts, seeds, coordinates — and never used
+ * for prose, so numbers read as data at a glance.
  */
 :root {
-  --bg: #080c18;
-  --surface: #0e1426;
-  --surface-2: #161f3a;
-  --ink: #e9edf8;
-  --ink-2: #8d97b8;
-  --ink-3: #5a6484;
-  --line: #1e294a;
+  --bg: #0a0a0b;
+  --surface: #141416;
+  --surface-2: #1d1d20;
+  --ink: #f4f4f5;
+  --ink-2: #a1a1a6;
+  --ink-3: #6b6b70;
+  --line: #27272a;
+  --line-strong: #35353a;
 
-  --accent: #35e0a1;
-  --accent-ink: #06281c;
-  --blue: #4f8cff;
-  --red: #ff5470;
+  /*
+   * One accent, used for anything live: the interface controls and the frontier of the
+   * search are the same blue because they mean the same thing.
+   */
+  --accent: #4f8ff7;
+  --accent-ink: #04101f;
 
-  --cell: #111a33;
-  --wall: #05090f;
-  --grid-line: #1b2645;
-  --visited: #2c4f9e;
+  /*
+   * Search states. Two blues of rising intensity for the work in progress — dim for ground
+   * already settled, the live accent for the edge still being worked on — and green, the
+   * one colour the interface never uses, for the answer.
+   *
+   * Explored has to carry a tint. Grey would have been the obvious choice, but the open
+   * floor of a map is grey too, and the two became impossible to tell apart.
+   */
+  --explored: #2b4a7d;
+  --frontier: #4f8ff7;
+  --path: #34d399;
+
+  --cell: #1a1a1d;
+  --wall: #050506;
+  --grid-line: #232327;
 
   --radius: 10px;
+  --radius-sm: 7px;
   --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
 
@@ -43,11 +57,7 @@
 
 body {
   margin: 0;
-  /* A faint blueprint rule, far enough below the data grid not to compete with it. */
-  background-color: var(--bg);
-  background-image: linear-gradient(#0d1322 1px, transparent 1px), linear-gradient(90deg, #0d1322 1px, transparent 1px);
-  background-position: -1px -1px;
-  background-size: 64px 64px;
+  background: var(--bg);
   color: var(--ink);
   font-family: var(--font);
   font-size: 15px;
@@ -60,21 +70,32 @@ body {
   outline-offset: 2px;
 }
 
-/* Small uppercase monospace, for anything measured: counts, seeds, coordinates. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Small monospace, for anything measured. */
 .meta {
   color: var(--ink-3);
   font-family: var(--font-mono);
   font-size: 12px;
-  letter-spacing: 0.02em;
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
 }
+
+/* Header ------------------------------------------------------------------ */
 
 .header {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: rgb(8 12 24 / 85%);
-  backdrop-filter: blur(8px);
+  background: rgb(10 10 11 / 80%);
+  backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line);
 }
 
@@ -83,71 +104,72 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  max-width: 1320px;
-  height: 58px;
+  max-width: 1280px;
+  height: 56px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 22px;
 }
 
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  font-size: 19px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  gap: 9px;
+  font-size: 17px;
+  font-weight: 650;
+  letter-spacing: -0.015em;
 }
 
-/* An outlined square with one corner drawn in, like a route turning inside a cell. */
+/* An outlined cell with one corner drawn in, like a route turning inside it. */
 .brand__mark {
   position: relative;
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   border: 1.5px solid var(--accent);
-  border-radius: 7px;
+  border-radius: 6px;
 }
 
 .brand__mark::after {
   position: absolute;
-  inset: 6px;
+  inset: 5.5px;
   border: 2px solid var(--accent);
   border-width: 0 0 2px 2px;
-  border-radius: 0 0 0 2px;
+  border-radius: 0 0 0 1px;
   content: '';
 }
 
+/* Layout ------------------------------------------------------------------ */
+
 .page {
-  max-width: 1320px;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 28px 24px 56px;
+  padding: 22px 22px 48px;
 }
 
-.hero {
+.titlebar {
   display: flex;
-  align-items: flex-end;
+  align-items: baseline;
   justify-content: space-between;
-  gap: 24px;
-  padding-bottom: 22px;
+  gap: 20px;
+  padding-bottom: 18px;
 }
 
-.hero h1 {
+.titlebar h1 {
   margin: 0;
-  font-size: 34px;
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: -0.03em;
+  font-size: 21px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
 }
 
-.hero p {
-  max-width: 520px;
-  margin: 6px 0 0;
+.titlebar p {
+  margin: 2px 0 0;
   color: var(--ink-2);
+  font-size: 13.5px;
 }
 
 .workspace {
   display: grid;
-  grid-template-columns: 300px minmax(0, 1fr);
-  gap: 20px;
+  grid-template-columns: 276px minmax(0, 1fr);
+  gap: 18px;
   align-items: start;
 }
 
@@ -160,15 +182,17 @@ body {
 .panel {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .stage {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   min-width: 0;
 }
+
+/* Cards ------------------------------------------------------------------- */
 
 .card {
   background: var(--surface);
@@ -176,166 +200,157 @@ body {
   border-radius: var(--radius);
 }
 
-.card--stage {
-  padding: 10px;
-}
-
-.gridcanvas {
-  width: 100%;
-}
-
-.gridcanvas__canvas {
-  display: block;
-  margin: 0 auto;
-  border-radius: 4px;
-  /* The canvas handles its own drags, so the browser must not pan or scroll on touch. */
-  touch-action: none;
-  cursor: crosshair;
-}
-
 .card__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 11px 14px;
+  padding: 10px 13px;
   border-bottom: 1px solid var(--line);
   color: var(--ink-3);
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.11em;
   text-transform: uppercase;
 }
 
 .card__body {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 12px 14px;
+  gap: 10px;
+  padding: 10px;
 }
+
+.card--stage {
+  padding: 9px;
+}
+
+/* Options ----------------------------------------------------------------- */
 
 .options {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
-/* A radio presented as a block: name on top, one line of explanation under it. */
+/*
+ * Only the selected option explains itself. Five permanent descriptions turned the panel
+ * into a wall of text; collapsing them keeps the list scannable and halves its height.
+ */
 .option {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 9px 11px;
+  gap: 3px;
+  padding: 8px 10px;
   background: transparent;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  color: inherit;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--ink-2);
   font: inherit;
   text-align: left;
   cursor: pointer;
+  transition:
+    background 0.12s,
+    color 0.12s;
 }
 
-.option:hover {
-  background: var(--surface-2);
-}
-
+.option:hover,
 .option[aria-checked='true'] {
-  background: rgb(53 224 161 / 7%);
-  border-color: var(--accent);
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+/* Someone who asked for less motion gets the same states without the movement. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 .option__name {
-  font-size: 14px;
-  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 550;
+}
+
+/* A thin leading rule that grows in on the selected option. */
+.option__name::before {
+  flex: none;
+  width: 2px;
+  height: 13px;
+  background: var(--accent);
+  border-radius: 1px;
+  content: '';
+  transform: scaleY(0);
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.option[aria-checked='true'] .option__name::before {
+  transform: scaleY(1);
 }
 
 .option__note {
-  color: var(--ink-2);
-  font-size: 12px;
-  line-height: 1.35;
-}
-
-.buttons {
-  display: flex;
-  gap: 8px;
-}
-
-.button {
-  flex: 1;
-  padding: 9px 12px;
-  background: var(--surface-2);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  color: var(--ink);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.button:hover {
-  border-color: var(--ink-3);
-}
-
-.button--primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-ink);
-  font-weight: 600;
-}
-
-.button--primary:hover {
-  border-color: var(--accent);
-  filter: brightness(1.08);
-}
-
-.tag {
-  margin-left: 8px;
-  padding: 2px 7px;
-  background: var(--surface-2);
-  border-radius: 999px;
+  padding-left: 10px;
   color: var(--ink-3);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
+  font-size: 12px;
+  line-height: 1.4;
+  animation: note-in 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.tag--good {
-  background: rgb(53 224 161 / 12%);
-  color: var(--accent);
+@keyframes note-in {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
 }
+
+/* Switch ------------------------------------------------------------------ */
 
 .switch {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
-  padding: 9px 11px;
+  gap: 12px;
+  padding: 9px 10px;
   background: transparent;
   border: 1px solid var(--line);
-  border-radius: 8px;
-  color: inherit;
+  border-radius: var(--radius-sm);
+  color: var(--ink);
   font: inherit;
   text-align: left;
   cursor: pointer;
 }
 
 .switch:hover {
-  background: var(--surface-2);
+  border-color: var(--line-strong);
 }
 
 .switch__text {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
+}
+
+.switch__label {
+  font-size: 13.5px;
+  font-weight: 550;
+}
+
+.switch__note {
+  color: var(--ink-3);
+  font-size: 11.5px;
 }
 
 .switch__track {
   flex: none;
-  width: 40px;
-  height: 23px;
+  width: 36px;
+  height: 21px;
   padding: 3px;
   background: var(--surface-2);
   border-radius: 999px;
@@ -348,8 +363,8 @@ body {
 
 .switch__thumb {
   display: block;
-  width: 17px;
-  height: 17px;
+  width: 15px;
+  height: 15px;
   background: var(--ink-3);
   border-radius: 50%;
   transition:
@@ -359,16 +374,56 @@ body {
 
 .switch[aria-checked='true'] .switch__thumb {
   background: var(--accent-ink);
-  transform: translateX(17px);
+  transform: translateX(15px);
 }
+
+/* Buttons ----------------------------------------------------------------- */
+
+.buttons {
+  display: flex;
+  gap: 7px;
+}
+
+.button {
+  flex: 1;
+  padding: 8px 11px;
+  background: var(--surface-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    border-color 0.12s;
+}
+
+.button:hover {
+  border-color: var(--line-strong);
+}
+
+.button--primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+.button--primary:hover {
+  border-color: transparent;
+  filter: brightness(1.07);
+}
+
+/* Stats ------------------------------------------------------------------- */
 
 .stats {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
 
-@media (width <= 560px) {
+@media (width <= 520px) {
   .stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -377,7 +432,7 @@ body {
 .stat {
   display: flex;
   flex-direction: column;
-  padding: 10px 13px;
+  padding: 11px 13px;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -387,58 +442,41 @@ body {
   color: var(--ink-3);
   font-family: var(--font-mono);
   font-size: 10px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.11em;
   text-transform: uppercase;
 }
 
 .stat__value {
-  margin-top: 2px;
+  margin-top: 3px;
   font-family: var(--font-mono);
-  font-size: 21px;
+  font-size: 22px;
   font-weight: 600;
-  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 
-.stat__value--accent {
-  color: var(--accent);
+/* Grid -------------------------------------------------------------------- */
+
+.gridcanvas {
+  width: 100%;
 }
 
-.legend {
-  display: flex;
-  gap: 16px;
-  color: var(--ink-3);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.04em;
+.gridcanvas__canvas {
+  display: block;
+  margin: 0 auto;
+  border-radius: 3px;
+  /* The canvas handles its own drags, so the browser must not pan or scroll on touch. */
+  touch-action: none;
+  cursor: crosshair;
 }
 
-.legend span {
-  display: inline-flex;
-  align-items: center;
-}
-
-.legend i {
-  width: 9px;
-  height: 9px;
-  margin-right: 6px;
-  border-radius: 2px;
-}
-
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
+/* Playback ---------------------------------------------------------------- */
 
 .playback {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 7px 12px;
+  gap: 12px;
+  padding: 6px 11px;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -453,19 +491,22 @@ body {
 
 .playback__buttons {
   display: flex;
-  gap: 4px;
+  gap: 2px;
 }
 
 .round {
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   background: transparent;
   border: 0;
   border-radius: 50%;
   color: var(--ink-2);
   cursor: pointer;
+  transition:
+    background 0.12s,
+    color 0.12s;
 }
 
 .round:hover:not(:disabled) {
@@ -474,7 +515,7 @@ body {
 }
 
 .round:disabled {
-  opacity: 0.35;
+  opacity: 0.3;
   cursor: not-allowed;
 }
 
@@ -485,24 +526,24 @@ body {
 
 .round--primary:hover:not(:disabled) {
   background: var(--accent);
-  filter: brightness(1.08);
+  filter: brightness(1.07);
 }
 
 .playback__scrub {
-  flex: 1;
-  min-width: 120px;
   display: flex;
+  flex: 1;
+  min-width: 110px;
 }
 
 .playback__count {
-  min-width: 72px;
+  min-width: 70px;
   text-align: right;
 }
 
 .playback__speed {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
 }
 
 .playback input[type='range'] {
@@ -512,10 +553,34 @@ body {
 }
 
 .playback__speed input[type='range'] {
-  width: 88px;
+  width: 76px;
 }
 
 .playback__speed .meta {
-  min-width: 52px;
+  min-width: 50px;
   text-align: right;
+}
+
+/* Legend ------------------------------------------------------------------ */
+
+.legend {
+  display: flex;
+  gap: 15px;
+  padding-left: 2px;
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
+}
+
+.legend span {
+  display: inline-flex;
+  align-items: center;
+}
+
+.legend i {
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: 2px;
 }

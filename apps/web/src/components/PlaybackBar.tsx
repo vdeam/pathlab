@@ -14,8 +14,7 @@ export function PlaybackBar({ total }: PlaybackBarProps) {
   const setPlaying = useStore((state) => state.setPlaying);
   const setSpeed = useStore((state) => state.setSpeed);
 
-  const position = cursor ?? total;
-  const atEnd = position >= total;
+  const atEnd = cursor >= total;
 
   const togglePlay = () => {
     if (playing) {
@@ -29,7 +28,7 @@ export function PlaybackBar({ total }: PlaybackBarProps) {
 
   const stepBy = (delta: number) => {
     setPlaying(false);
-    setCursor(Math.max(0, Math.min(position + delta, total)));
+    setCursor(Math.max(0, Math.min(cursor + delta, total)));
   };
 
   return (
@@ -38,9 +37,9 @@ export function PlaybackBar({ total }: PlaybackBarProps) {
         <button
           type="button"
           className="round"
-          onClick={() => stepBy(-position)}
+          onClick={() => stepBy(-cursor)}
           aria-label="Rewind"
-          disabled={position === 0}
+          disabled={cursor === 0}
         >
           <RewindIcon />
         </button>
@@ -49,7 +48,7 @@ export function PlaybackBar({ total }: PlaybackBarProps) {
           className="round"
           onClick={() => stepBy(-1)}
           aria-label="Step back"
-          disabled={position === 0}
+          disabled={cursor === 0}
         >
           <StepBackIcon />
         </button>
@@ -72,7 +71,7 @@ export function PlaybackBar({ total }: PlaybackBarProps) {
           type="range"
           min={0}
           max={Math.max(total, 1)}
-          value={position}
+          value={cursor}
           onChange={(event) => {
             setPlaying(false);
             setCursor(Number(event.target.value));
@@ -81,7 +80,7 @@ export function PlaybackBar({ total }: PlaybackBarProps) {
       </label>
 
       <span className="meta playback__count">
-        {position} / {total}
+        {cursor} / {total}
       </span>
 
       <label className="playback__speed">

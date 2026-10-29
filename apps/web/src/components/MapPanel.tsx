@@ -17,19 +17,22 @@ export function MapPanel() {
 
       <div className="card__body">
         <div className="options" role="radiogroup" aria-label="Map generator">
-          {MAP_GENERATORS.map((generator) => (
-            <button
-              key={generator.id}
-              type="button"
-              role="radio"
-              aria-checked={generator.id === generatorId}
-              className="option"
-              onClick={() => setGenerator(generator.id)}
-            >
-              <span className="option__name">{generator.name}</span>
-              <span className="option__note">{generator.summary}</span>
-            </button>
-          ))}
+          {MAP_GENERATORS.map((generator) => {
+            const selected = generator.id === generatorId;
+            return (
+              <button
+                key={generator.id}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                className="option"
+                onClick={() => setGenerator(generator.id)}
+              >
+                <span className="option__name">{generator.name}</span>
+                {selected && <span className="option__note">{generator.summary}</span>}
+              </button>
+            );
+          })}
         </div>
 
         <div className="buttons">

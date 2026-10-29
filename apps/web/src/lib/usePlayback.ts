@@ -28,7 +28,7 @@ export function usePlayback(total: number): void {
       const whole = Math.floor(carry);
       if (whole > 0) {
         carry -= whole;
-        const next = Math.min((cursor ?? total) + whole, total);
+        const next = Math.min(cursor + whole, total);
         setCursor(next);
         if (next >= total) {
           setPlaying(false);

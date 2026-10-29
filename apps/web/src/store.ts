@@ -29,8 +29,8 @@ interface State extends Scenario {
   /** Allow 8-directional movement. Corners are never cut either way. */
   readonly diagonal: boolean;
 
-  /** How many recorded steps to replay, or null to show the finished search. */
-  readonly cursor: number | null;
+  /** How many recorded steps to replay. Zero shows the bare map. */
+  readonly cursor: number;
   readonly playing: boolean;
   /** Playback speed, 0 to 60, read through `eventsPerSecond`. */
   readonly speed: number;
@@ -47,16 +47,17 @@ interface State extends Scenario {
   clearWalls: () => void;
   setAlgorithm: (algorithmId: string) => void;
   setDiagonal: (diagonal: boolean) => void;
-  setCursor: (cursor: number | null) => void;
+  setCursor: (cursor: number) => void;
   setPlaying: (playing: boolean) => void;
   setSpeed: (speed: number) => void;
 }
 
 /**
  * Editing the scenario produces a different recording, so the old position in it means
- * nothing. Every change rewinds to the finished result and stops playback.
+ * nothing. Every change rewinds to the bare map: the search is something you watch run,
+ * not an answer already sitting there when you arrive.
  */
-const REWOUND = { cursor: null, playing: false } as const;
+const REWOUND = { cursor: 0, playing: false } as const;
 
 const INITIAL_GENERATOR = 'rooms';
 const INITIAL_SEED = 2024;
@@ -66,7 +67,7 @@ export const useStore = create<State>((set, get) => ({
   seed: INITIAL_SEED,
   algorithmId: ALGORITHMS[0]!.id,
   diagonal: false,
-  cursor: null,
+  cursor: 0,
   playing: false,
   speed: 34,
   ...createScenario(INITIAL_GENERATOR, INITIAL_SEED),
