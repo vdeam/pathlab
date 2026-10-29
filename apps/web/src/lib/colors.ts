@@ -9,7 +9,7 @@ export interface GridTokens {
   readonly gridLine: string;
   readonly background: string;
   readonly ink: string;
-  readonly goal: string;
+  readonly accent: string;
   readonly frontier: string;
   readonly explored: string;
   readonly path: string;
@@ -25,10 +25,10 @@ export function readGridTokens(): GridTokens {
     gridLine: token('--grid-line'),
     background: token('--bg'),
     ink: token('--ink'),
-    goal: token('--red'),
-    frontier: token('--blue'),
-    explored: token('--visited'),
-    path: token('--accent'),
+    accent: token('--accent'),
+    frontier: token('--frontier'),
+    explored: token('--explored'),
+    path: token('--path'),
     fontMono: token('--font-mono'),
   };
 }

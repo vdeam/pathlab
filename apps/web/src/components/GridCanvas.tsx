@@ -21,9 +21,6 @@ export interface GridCanvasProps {
 
 /** Below this, the gridlines crowd the cells and are better left out. */
 const MIN_CELL_FOR_GRIDLINES = 7;
-/** Below this, the S and G letters are no longer legible. */
-const MIN_CELL_FOR_LABELS = 12;
-
 /** What the current drag is doing. Fixed on pointer down and kept until pointer up. */
 type Drag = { kind: 'start' } | { kind: 'goal' } | { kind: 'paint'; blocked: boolean } | null;
 
@@ -105,29 +102,93 @@ export function GridCanvas({
       context.stroke();
     }
 
-    const drawMarker = (id: number, fill: string, label: string) => {
-      const centerX = (id % width) * cellSize + cellSize / 2;
-      const centerY = Math.floor(id / width) * cellSize + cellSize / 2;
-      const radius = cellSize * 0.34;
+    /*
+     * Both markers are built from a dark disc with bright strokes on top, so they punch
+     * through whatever lies underneath: the green of a finished route, the blue of the
+     * frontier, or the bare cell. Colour alone could not do that, since every one of those
+     * states is already coloured.
+     *
+     * The shapes carry the meaning. A dot inside a halo is where the search begins; a
+     * crosshair target is what it is aiming at.
+     */
+    const stroke = Math.max(1.4, cellSize * 0.09);
+    const centreOf = (id: number) => ({
+      x: (id % width) * cellSize + cellSize / 2,
+      y: Math.floor(id / width) * cellSize + cellSize / 2,
+    });
 
-      context.fillStyle = fill;
-      context.beginPath();
-      context.arc(centerX, centerY, radius, 0, Math.PI * 2);
-      context.fill();
-      context.strokeStyle = tokens.background;
-      context.lineWidth = 2;
-      context.stroke();
-
-      if (cellSize < MIN_CELL_FOR_LABELS) return;
+    /** Clears the cell under a marker so its strokes always read against the same base. */
+    const punchOut = (x: number, y: number, radius: number) => {
       context.fillStyle = tokens.background;
-      context.font = `600 ${Math.round(cellSize * 0.5)}px ${tokens.fontMono}`;
-      context.textAlign = 'center';
-      context.textBaseline = 'middle';
-      context.fillText(label, centerX, centerY + 0.5);
+      context.beginPath();
+      context.arc(x, y, radius, 0, Math.PI * 2);
+      context.fill();
     };
 
-    drawMarker(start, tokens.ink, 'S');
-    drawMarker(goal, tokens.goal, 'G');
+    const drawStart = () => {
+      const { x, y } = centreOf(start);
+      const radius = cellSize * 0.36;
+
+      punchOut(x, y, radius + stroke / 2);
+
+      // A faint outer halo, like a signal going out from the origin.
+      context.globalAlpha = 0.3;
+      context.strokeStyle = tokens.ink;
+      context.lineWidth = stroke * 0.7;
+      context.beginPath();
+      context.arc(x, y, radius + stroke * 1.4, 0, Math.PI * 2);
+      context.stroke();
+      context.globalAlpha = 1;
+
+      context.strokeStyle = tokens.ink;
+      context.lineWidth = stroke;
+      context.beginPath();
+      context.arc(x, y, radius, 0, Math.PI * 2);
+      context.stroke();
+
+      context.fillStyle = tokens.ink;
+      context.beginPath();
+      context.arc(x, y, radius * 0.42, 0, Math.PI * 2);
+      context.fill();
+    };
+
+    const drawGoal = () => {
+      const { x, y } = centreOf(goal);
+      const radius = cellSize * 0.36;
+
+      punchOut(x, y, radius + stroke / 2);
+
+      context.strokeStyle = tokens.ink;
+      context.lineWidth = stroke;
+      context.lineCap = 'round';
+
+      // Outer ring, inner ring, and four ticks reaching past them: a target.
+      context.beginPath();
+      context.arc(x, y, radius, 0, Math.PI * 2);
+      context.stroke();
+
+      context.beginPath();
+      context.arc(x, y, radius * 0.38, 0, Math.PI * 2);
+      context.stroke();
+
+      const inner = radius + stroke * 0.8;
+      const outer = radius + stroke * 2.1;
+      context.beginPath();
+      for (const [dx, dy] of [
+        [0, -1],
+        [1, 0],
+        [0, 1],
+        [-1, 0],
+      ] as const) {
+        context.moveTo(x + dx * inner, y + dy * inner);
+        context.lineTo(x + dx * outer, y + dy * outer);
+      }
+      context.stroke();
+      context.lineCap = 'butt';
+    };
+
+    drawStart();
+    drawGoal();
   }, [width, height, walls, start, goal, state, path, cellSize]);
 
   /** The cell under the pointer, or null when it falls outside the grid. */

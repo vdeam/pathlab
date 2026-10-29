@@ -31,7 +31,7 @@ export function App() {
   }, [walls, start, goal, algorithmId, diagonal]);
 
   const total = result.events.length;
-  const view = useMemo(() => viewAt(result, cursor ?? total, NODE_COUNT), [result, cursor, total]);
+  const view = useMemo(() => viewAt(result, cursor, NODE_COUNT), [result, cursor]);
   const algorithm = getAlgorithm(algorithmId);
 
   usePlayback(total);
@@ -44,20 +44,18 @@ export function App() {
             <span className="brand__mark" aria-hidden="true" />
             Pathlab
           </span>
-          <span className="meta">
-            {GRID_WIDTH} × {GRID_HEIGHT} · seed {seed}
-          </span>
+          <span className="meta">seed {seed}</span>
         </div>
       </header>
 
       <main className="page">
-        <section className="hero">
+        <section className="titlebar">
           <div>
             <h1>Find the way.</h1>
             <p>Draw a map, pick an algorithm, and watch exactly how it searches.</p>
           </div>
           <span className="meta">
-            {algorithm.name} · {view.expanded} expanded
+            {algorithm.name} · {GRID_WIDTH} × {GRID_HEIGHT}
             {view.exhausted ? ' · no route' : ''}
           </span>
         </section>
@@ -86,15 +84,15 @@ export function App() {
             <PlaybackBar total={total} />
             <div className="legend">
               <span>
-                <i style={{ background: 'var(--blue)' }} />
+                <i style={{ background: 'var(--frontier)' }} />
                 Frontier
               </span>
               <span>
-                <i style={{ background: 'var(--visited)' }} />
+                <i style={{ background: 'var(--explored)' }} />
                 Explored
               </span>
               <span>
-                <i style={{ background: 'var(--accent)' }} />
+                <i style={{ background: 'var(--path)' }} />
                 Path
               </span>
             </div>
