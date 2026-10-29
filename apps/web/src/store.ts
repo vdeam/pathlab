@@ -1,4 +1,4 @@
-import { getGenerator, randomSeed } from '@pathlab/core';
+import { ALGORITHMS, getGenerator, randomSeed } from '@pathlab/core';
 import { create } from 'zustand';
 import { nearestOpenCell } from './lib/placement.js';
 
@@ -25,6 +25,9 @@ function createScenario(generatorId: string, seed: number): Scenario {
 interface State extends Scenario {
   readonly generatorId: string;
   readonly seed: number;
+  readonly algorithmId: string;
+  /** Allow 8-directional movement. Corners are never cut either way. */
+  readonly diagonal: boolean;
 
   /** Blocks or clears a cell. Ignored on the start and goal cells. */
   setWall: (id: number, blocked: boolean) => void;
@@ -36,6 +39,8 @@ interface State extends Scenario {
   shuffleSeed: () => void;
   /** Empties the map, leaving the markers where they are. */
   clearWalls: () => void;
+  setAlgorithm: (algorithmId: string) => void;
+  setDiagonal: (diagonal: boolean) => void;
 }
 
 const INITIAL_GENERATOR = 'rooms';
@@ -44,6 +49,8 @@ const INITIAL_SEED = 2024;
 export const useStore = create<State>((set, get) => ({
   generatorId: INITIAL_GENERATOR,
   seed: INITIAL_SEED,
+  algorithmId: ALGORITHMS[0]!.id,
+  diagonal: false,
   ...createScenario(INITIAL_GENERATOR, INITIAL_SEED),
 
   setWall: (id, blocked) => {
@@ -77,4 +84,7 @@ export const useStore = create<State>((set, get) => ({
   },
 
   clearWalls: () => set({ walls: new Uint8Array(GRID_WIDTH * GRID_HEIGHT) }),
+
+  setAlgorithm: (algorithmId) => set({ algorithmId }),
+  setDiagonal: (diagonal) => set({ diagonal }),
 }));

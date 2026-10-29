@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { readGridTokens } from '../lib/colors.js';
+import { CellState } from '../lib/view.js';
 
 export interface GridCanvasProps {
   /** Columns and rows of the grid. */
@@ -9,6 +10,10 @@ export interface GridCanvasProps {
   readonly walls: Uint8Array;
   readonly start: number;
   readonly goal: number;
+  /** One `CellState` per node: what the search has done with it so far. */
+  readonly state: Uint8Array;
+  /** The route found, drawn on top of everything else. */
+  readonly path: readonly number[] | null;
   readonly onSetWall: (id: number, blocked: boolean) => void;
   readonly onMoveStart: (id: number) => void;
   readonly onMoveGoal: (id: number) => void;
@@ -22,7 +27,18 @@ const MIN_CELL_FOR_LABELS = 12;
 /** What the current drag is doing. Fixed on pointer down and kept until pointer up. */
 type Drag = { kind: 'start' } | { kind: 'goal' } | { kind: 'paint'; blocked: boolean } | null;
 
-export function GridCanvas({ width, height, walls, start, goal, onSetWall, onMoveStart, onMoveGoal }: GridCanvasProps) {
+export function GridCanvas({
+  width,
+  height,
+  walls,
+  start,
+  goal,
+  state,
+  path,
+  onSetWall,
+  onMoveStart,
+  onMoveGoal,
+}: GridCanvasProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const drag = useRef<Drag>(null);
@@ -56,10 +72,19 @@ export function GridCanvas({ width, height, walls, start, goal, onSetWall, onMov
     context.setTransform(ratio, 0, 0, ratio, 0, 0);
 
     const tokens = readGridTokens();
+    const onPath = path ? new Set(path) : null;
 
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
-        context.fillStyle = walls[y * width + x] === 0 ? tokens.cell : tokens.wall;
+        const id = y * width + x;
+        // Later states paint over earlier ones: a cell on the path shows as path even
+        // though it was explored on the way there.
+        let fill = tokens.cell;
+        if (walls[id] !== 0) fill = tokens.wall;
+        else if (onPath?.has(id)) fill = tokens.path;
+        else if (state[id] === CellState.Explored) fill = tokens.explored;
+        else if (state[id] === CellState.Frontier) fill = tokens.frontier;
+        context.fillStyle = fill;
         context.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
       }
     }
@@ -103,7 +128,7 @@ export function GridCanvas({ width, height, walls, start, goal, onSetWall, onMov
 
     drawMarker(start, tokens.ink, 'S');
     drawMarker(goal, tokens.goal, 'G');
-  }, [width, height, walls, start, goal, cellSize]);
+  }, [width, height, walls, start, goal, state, path, cellSize]);
 
   /** The cell under the pointer, or null when it falls outside the grid. */
   const cellAt = (event: React.PointerEvent): number | null => {

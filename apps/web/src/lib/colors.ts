@@ -10,6 +10,9 @@ export interface GridTokens {
   readonly background: string;
   readonly ink: string;
   readonly goal: string;
+  readonly frontier: string;
+  readonly explored: string;
+  readonly path: string;
   readonly fontMono: string;
 }
 
@@ -23,6 +26,9 @@ export function readGridTokens(): GridTokens {
     background: token('--bg'),
     ink: token('--ink'),
     goal: token('--red'),
+    frontier: token('--blue'),
+    explored: token('--visited'),
+    path: token('--accent'),
     fontMono: token('--font-mono'),
   };
 }
