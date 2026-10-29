@@ -289,3 +289,138 @@ body {
   border-color: var(--accent);
   filter: brightness(1.08);
 }
+
+.tag {
+  margin-left: 8px;
+  padding: 2px 7px;
+  background: var(--surface-2);
+  border-radius: 999px;
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.tag--good {
+  background: rgb(53 224 161 / 12%);
+  color: var(--accent);
+}
+
+.switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 9px 11px;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.switch:hover {
+  background: var(--surface-2);
+}
+
+.switch__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.switch__track {
+  flex: none;
+  width: 40px;
+  height: 23px;
+  padding: 3px;
+  background: var(--surface-2);
+  border-radius: 999px;
+  transition: background 0.15s;
+}
+
+.switch[aria-checked='true'] .switch__track {
+  background: var(--accent);
+}
+
+.switch__thumb {
+  display: block;
+  width: 17px;
+  height: 17px;
+  background: var(--ink-3);
+  border-radius: 50%;
+  transition:
+    transform 0.15s,
+    background 0.15s;
+}
+
+.switch[aria-checked='true'] .switch__thumb {
+  background: var(--accent-ink);
+  transform: translateX(17px);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (width <= 560px) {
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 13px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.stat__label {
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.stat__value {
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat__value--accent {
+  color: var(--accent);
+}
+
+.legend {
+  display: flex;
+  gap: 16px;
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.legend span {
+  display: inline-flex;
+  align-items: center;
+}
+
+.legend i {
+  width: 9px;
+  height: 9px;
+  margin-right: 6px;
+  border-radius: 2px;
+}
