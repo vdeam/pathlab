@@ -3,7 +3,9 @@ import { useMemo } from 'react';
 import { AlgorithmPanel } from './components/AlgorithmPanel.js';
 import { GridCanvas } from './components/GridCanvas.js';
 import { MapPanel } from './components/MapPanel.js';
+import { PlaybackBar } from './components/PlaybackBar.js';
 import { Stats } from './components/Stats.js';
+import { usePlayback } from './lib/usePlayback.js';
 import { viewAt } from './lib/view.js';
 import { GRID_HEIGHT, GRID_WIDTH, useStore } from './store.js';
 
@@ -16,6 +18,7 @@ export function App() {
   const seed = useStore((state) => state.seed);
   const algorithmId = useStore((state) => state.algorithmId);
   const diagonal = useStore((state) => state.diagonal);
+  const cursor = useStore((state) => state.cursor);
   const setWall = useStore((state) => state.setWall);
   const moveStart = useStore((state) => state.moveStart);
   const moveGoal = useStore((state) => state.moveGoal);
@@ -27,8 +30,11 @@ export function App() {
     return solve(grid, start, goal, getAlgorithm(algorithmId).run);
   }, [walls, start, goal, algorithmId, diagonal]);
 
-  const view = useMemo(() => viewAt(result, result.events.length, NODE_COUNT), [result]);
+  const total = result.events.length;
+  const view = useMemo(() => viewAt(result, cursor ?? total, NODE_COUNT), [result, cursor, total]);
   const algorithm = getAlgorithm(algorithmId);
+
+  usePlayback(total);
 
   return (
     <>
@@ -77,6 +83,7 @@ export function App() {
                 onMoveGoal={moveGoal}
               />
             </div>
+            <PlaybackBar total={total} />
             <div className="legend">
               <span>
                 <i style={{ background: 'var(--blue)' }} />
